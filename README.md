@@ -23,11 +23,9 @@ or, if it doesn't work, type
 
 How to create a new parameter (Python version)
 ----------------------------
-Make the script executable (if not already done so) by typing this in the command line:
-> chmod +x creationOfNewParameter.sh
 
 Run the script from the commandline
-> ./creationOfNewParameter.sh
+> py .\creationOfNewParameter.py
 
 Follow the prompts and insert the following information
 - domain name
