@@ -54,6 +54,7 @@ How to check expressions (WIP)
 
 Install the required Python packages
 > py -m pip install antlr4-python3-runtime
+
 > py -m pip install antlr4-tools
 
 Run script
