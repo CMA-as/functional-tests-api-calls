@@ -21,6 +21,6 @@ fi
 echo "Retrieved paramId: $param_id"
 
 # Construct the POST request
-curl -X POST "$domain/api/v1/Rules/parameters/parameter?paramId=100110" \
+curl -X POST "$domain/api/v1/Rules/parameters/parameter?paramId=$param_id" \
      -H "Content-Type: application/json" \
      -d "{\"Description\":\"$param_name\",\"DataType\":\"$data_type\",\"Print\":\"$param_name\"}"
