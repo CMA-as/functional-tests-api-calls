@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "Hello! Let's create a new parameter together 😊"
+echo "I need some info from you to do that (press Enter after you have inserted the answer)"
 
 # Prompt for input
 read -p "Enter the domain (e.g., https://api.example.com): " domain
