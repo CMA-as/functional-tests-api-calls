@@ -7,12 +7,18 @@
 - ✅ Important: Check the box that says “Add Python to PATH” before clicking “Install Now.”
 4. Check the installation was successful by typing the following in the Command Prompt
 > python --version
+
 or, if it doesn't work, type
+
 > py --version
+
 You should see something like Python 3.12.1
+
 5.Install needed packages
 > py -m pip install requests
+
 or, if it doesn't work, type
+
 > pip install requests
 
 How to create a new parameter (Python version)
