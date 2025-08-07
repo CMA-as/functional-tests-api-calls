@@ -47,4 +47,5 @@ Install the required Python packages
 
 Run script
 > cd '.\creation of expressions\'
+
 > py .\CheckCorrectnessOfExpression.py
