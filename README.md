@@ -21,6 +21,8 @@ or, if it doesn't work, type
 
 > pip install requests
 
+
+
 How to create a new parameter (Python version)
 ----------------------------
 
@@ -47,3 +49,13 @@ Follow the prompts and insert the following information
 - data type (NUMERIC if a number, STRING if text)
 
 
+How to check expressions (WIP)
+-----------------------
+
+Install the required Python packages
+> py -m pip install antlr4-python3-runtime
+> py -m pip install antlr4-tools
+
+Run script
+> cd '.\creation of expressions\'
+> py .\CheckCorrectnessOfExpression.py
