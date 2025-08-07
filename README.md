@@ -1,24 +1,19 @@
 🐍 Prerequisites: installing Python and packages
 -------------
 
-Go to the official Python website:
-👉 https://www.python.org/downloads/windows/
-Click the Download Python button (e.g., "Download Python 3.12.x").
-
-Run the installer:
+1. 👉 Go to the official Python website: https://www.python.org/downloads/windows/
+2. Click the Download Python button (e.g., "Download Python 3.12.x").
+3. Run the installer and wait for the installation to complete:
 - ✅ Important: Check the box that says “Add Python to PATH” before clicking “Install Now.”
-- Wait for installation to complete.
-
-- To verify it worked:
-- Open Command Prompt
-- Type:
+4. Check the installation was successful by typing the following in the Command Prompt
 > python --version
 or, if it doesn't work, type
 > py --version
-- You should see something like Python 3.12.1
-
-Install needed packages
+You should see something like Python 3.12.1
+5.Install needed packages
 > py -m pip install requests
+or, if it doesn't work, type
+> pip install requests
 
 How to create a new parameter (Python version)
 ----------------------------
