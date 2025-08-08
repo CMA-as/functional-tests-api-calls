@@ -12,7 +12,7 @@ data_type = input("🔢 Enter the data type (e.g., NUMERIC, STRING): ").strip()
 # Step 1: Get the next available paramId
 get_url = f"{domain}/api/v1/Rules/parameters/nextAvailableId"
 try:
-    response = requests.get(get_url)
+    response = requests.get(get_url,verify=False)
     response.raise_for_status()
     param_id = response.json().get("paramId")
 except Exception as e:
@@ -39,7 +39,7 @@ headers = {
 }
 
 try:
-    post_response = requests.post(post_url, headers=headers, data=json.dumps(payload))
+    post_response = requests.post(post_url, headers=headers, data=json.dumps(payload),verify=False)
     post_response.raise_for_status()
     print("Parameter created successfully!")
     print("Response:", post_response.text)
