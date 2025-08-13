@@ -1,5 +1,5 @@
 from antlr4 import *
-from GrammarLexer import GrammarLexer
+from ./GrammarLexer import GrammarLexer
 from GrammarParser import GrammarParser
 import sys
 import subprocess
@@ -42,3 +42,14 @@ parser = GrammarParser(token_stream)
 tree = parser.start()
 
 print("\n🎉 All done! Your expression is valid according to the grammar.")
+
+
+def check_correctness(expression):
+    input_stream = InputStream(expression)
+    lexer = GrammarLexer(input_stream)
+    token_stream = CommonTokenStream(lexer)
+    parser = GrammarParser(token_stream)
+    tree = parser.start()
+
+    #TODO: add return
+    return True

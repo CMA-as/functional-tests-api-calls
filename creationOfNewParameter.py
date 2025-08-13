@@ -10,7 +10,7 @@ param_name = input("🩺 Enter the parameter name: ").strip()
 data_type = input("🔢 Enter the data type (e.g., NUMERIC, STRING): ").strip()
 
 # Step 1: Get the next available paramId
-get_url = f"{domain}/api/v1/Rules/parameters/nextAvailableId"
+get_url = f"{domain}/api/v1/Rules/parameters/nextId"
 try:
     response = requests.get(get_url,verify=False)
     response.raise_for_status()
