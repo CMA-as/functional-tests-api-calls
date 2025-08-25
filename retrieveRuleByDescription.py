@@ -42,7 +42,7 @@ if response.status_code == 200:
     total_rules = len(rules)
 
     # Filter rules containing the keyword
-    matching_rules = [rule for rule in rules if title_of_rules in rule.get("Description", "")]
+    matching_rules = [rule for rule in rules if title_of_rules.lower() in rule.get("Description", "").lower()]
 
     # Number of matching rules
     matching_count = len(matching_rules)
