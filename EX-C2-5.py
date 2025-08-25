@@ -1,4 +1,3 @@
-#TODO: add steps for configuration of api
 
 """
 Processing:  
