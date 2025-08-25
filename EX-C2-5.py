@@ -33,7 +33,7 @@ LOGS_FOLDER = "logs/"
 now_formatted = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
-sys.stdout = Logger(f'{LOGS_FOLDER}{CLINICAL_SCENARIO} - {now_formatted}.log')
+sys.stdout = Logger(f'{LOGS_FOLDER}Creation of Rule {CLINICAL_SCENARIO} - {now_formatted}.log')
 
 #User inserts IDs,thresholds,locations
 print(f"Hello! Let's create the rule for the clinical scenario {CLINICAL_SCENARIO} 😊")
