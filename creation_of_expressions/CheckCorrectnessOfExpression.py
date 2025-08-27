@@ -1,5 +1,5 @@
 from antlr4 import *
-from ./GrammarLexer import GrammarLexer
+from GrammarLexer import GrammarLexer
 from GrammarParser import GrammarParser
 import sys
 import subprocess

@@ -49,3 +49,23 @@ Run script
 > cd '.\creation of expressions\'
 
 > py .\CheckCorrectnessOfExpression.py
+
+
+How to search a Rule by Description name
+-----------------------
+
+Run script
+> py .\retrieveRuleByDescription.py
+
+And follow the instructions.
+You can export the search results in a txt file that will be saved in the "logs" folder
+
+
+How to search a Parameter by Description name
+-----------------------
+
+Run script
+> py .\retrieveParametersByDescription.py
+
+And follow the instructions.
+You can export the search results in a txt file that will be saved in the "logs" folder

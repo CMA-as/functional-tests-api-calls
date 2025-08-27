@@ -88,7 +88,6 @@ formula =  {
         "DecimalPosition": 2, 
     } 
 
-print("    This rule has only one formula that generates an advisory. \nTherefore we don't need to store anything in a new parameter")
 print("    This is the formula that we will use")
 print(f"    {formula}\n")
 

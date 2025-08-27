@@ -1,0 +1,81 @@
+Hello! Let's create the rule for the clinical scenario EX-C3-1 😊
+I will need some information about the rule and the API
+⚙️ First: are you updating an existing rule? If so, insert the guid, if not, leave empty: 
+👤 What is the patient profile associated to this configuration? (e.g 'Regular', 'Heart failure', 'Pneumonia'..) ICU patient
+    🩺 Lower MEWS score threshold for this profile (e.g. 5): 5
+    🩺 Lower HR attribute score threshold for this profile (e.g. 2): 2
+    🩺 Lower RR attribute score threshold for this profile (e.g. 2): 2
+    🩺 Lower Temp attribute score threshold for this profile (e.g. 2): 2
+    🩺 Lower SpO2 attribute score threshold for this profile (e.g. 2): 2
+    🩺 Lower BP attribute score threshold for this profile (e.g. 2): 2
+✒️ What name do you want to give to the rule? (Keep in mind that the name will start with EX-C3-1 - ICU patient ):EX-C3-1 - ICU patient - 
+🛌 Beds on which the rule has to run (if more than one, divide the numbers with a comma): 1
+❓ Do you want the rule to stop if one of the expressions raise an error? (Type Y or N): y
+🌍 Enter the domain of the API (Press Enter for https://digistat.sasicu.ascom-demo.local): https://www.google.com
+To begin we need the IDs of the parameters to store the following calculated parameters:
+ MEWS score 
+ MEWS attribute of HR 
+ MEWS attribute of RR 
+ MEWS attribute of Temp 
+ MEWS attribute of SpO2 
+ MEWS attribute of BP
+Have you already created them? (y/n)You can create now by using the 'creationOFNewParameters.py' script. I will wait here for you 😊
+Press Enter when you have created them or CTRL+X to exit⚙️ Parameter ID of MEWS score: 100
+⚙️ Parameter ID of MEWS attribute of HR: 101
+⚙️ Parameter ID of MEWS attribute of RR: 102
+⚙️ Parameter ID of MEWS attribute of Temp: 103
+⚙️ Parameter ID of MEWS attribute of SpO2: 104
+⚙️ Parameter ID of MEWS attribute of BP: 105
+
+Thank you! I have everything that I need now 😊. 
+I will keep you updated about the steps that I am doing
+
+STEP 1 : Creation of expressions
+
+    These are the expressions that I will use: 
+
+    Calculation RR MEWS attribute: If(#4004 <= 8, 1, If(#4004 <= 11, 1, If(#4004 <= 20, 0, If(#4004 <= 24, 2, 3))))
+    Calculation SPO2 MEWS attribute: If(#7501 <= 91, 3, If(#7501 <= 93, 2, If(#7501 <= 95, 1, 0)))
+    Calculation TEMP MEWS attribute: If(#6034 <= 35.0, 3, If(#6034 <= 36.0, 1, If(#6034 <= 38.0, 0, If(#6034 <= 39.0, 1, 2))))
+    Calculation BP MEWS attribute: If(#3027 <= 90, 3, If(#3027 <= 100, 2, If(#3027 <= 110, 1, 0)))
+    Calculation HR MEWS attribute: If(#2001 <= 40, 3, If(#2001 <= 50, 1, If(#2001 <= 90, 0, If(#2001 <= 100, 1, If(#2001 <= 130, 2, 3)))))
+    Calculation of MEWS score: #4004 + #4004 + #4004 + #4004 + #4004
+STEP 2 : Creation of the formulas
+
+    These are the formulas that we will use
+
+    {'Expression': 'If(#4004 <= 8, 1, If(#4004 <= 11, 1, If(#4004 <= 20, 0, If(#4004 <= 24, 2, 3))))', 'OutputParamId': '102', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': 'If(#7501 <= 91, 3, If(#7501 <= 93, 2, If(#7501 <= 95, 1, 0)))', 'OutputParamId': '104', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': 'If(#2001 <= 40, 3, If(#2001 <= 50, 1, If(#2001 <= 90, 0, If(#2001 <= 100, 1, If(#2001 <= 130, 2, 3)))))', 'OutputParamId': '101', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': 'If(#6034 <= 35.0, 3, If(#6034 <= 36.0, 1, If(#6034 <= 38.0, 0, If(#6034 <= 39.0, 1, 2))))', 'OutputParamId': '103', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': 'If(#3027 <= 90, 3, If(#3027 <= 100, 2, If(#3027 <= 110, 1, 0)))', 'OutputParamId': '105', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': '#4004 + #4004 + #4004 + #4004 + #4004', 'OutputParamId': '100', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': "Advisory((#100 > 5 AND #101 > 2 AND #102 > 2 AND #105 > 2) OR (#100 > 5 AND #101 > 2 AND #102 > 2 AND #103 > 2) OR (#100 > 5), 'MEWS score '_(#100)_' . Potential complication : '_If(#100 > 5 AND #101 > 2 AND #102 > 2 AND #105 > 2, 'Heart Failure', If(#100 > 5 AND #101 > 2 AND #102 > 2 AND #103 > 2, 'Pneumonia', '')), 2, 'MEWS score '_(#100)_' . Potential complication : '_If(#100 > 5 AND #101 > 2 AND #102 > 2 AND #105 > 2, 'Heart Failure', If(#100 > 5 AND #101 > 2 AND #102 > 2 AND #103 > 2, 'Pneumonia', '')))", 'OutputParamId': 0, 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+STEP 3 : Creation of the rule
+
+    This is the rule that we will use
+    {'Description': 'EX-C3-1 - ICU patient - ', 'Locations': [1], 'StopAtFirstException': True, 'Formulas': [{'Expression': 'If(#4004 <= 8, 1, If(#4004 <= 11, 1, If(#4004 <= 20, 0, If(#4004 <= 24, 2, 3))))', 'OutputParamId': '102', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}, {'Expression': 'If(#7501 <= 91, 3, If(#7501 <= 93, 2, If(#7501 <= 95, 1, 0)))', 'OutputParamId': '104', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}, {'Expression': 'If(#6034 <= 35.0, 3, If(#6034 <= 36.0, 1, If(#6034 <= 38.0, 0, If(#6034 <= 39.0, 1, 2))))', 'OutputParamId': '103', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}, {'Expression': 'If(#3027 <= 90, 3, If(#3027 <= 100, 2, If(#3027 <= 110, 1, 0)))', 'OutputParamId': '105', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}, {'Expression': 'If(#2001 <= 40, 3, If(#2001 <= 50, 1, If(#2001 <= 90, 0, If(#2001 <= 100, 1, If(#2001 <= 130, 2, 3)))))', 'OutputParamId': '101', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}, {'Expression': '#4004 + #4004 + #4004 + #4004 + #4004', 'OutputParamId': '100', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}, {'Expression': "Advisory((#100 > 5 AND #101 > 2 AND #102 > 2 AND #105 > 2) OR (#100 > 5 AND #101 > 2 AND #102 > 2 AND #103 > 2) OR (#100 > 5), 'MEWS score '_(#100)_' . Potential complication : '_If(#100 > 5 AND #101 > 2 AND #102 > 2 AND #105 > 2, 'Heart Failure', If(#100 > 5 AND #101 > 2 AND #102 > 2 AND #103 > 2, 'Pneumonia', '')), 2, 'MEWS score '_(#100)_' . Potential complication : '_If(#100 > 5 AND #101 > 2 AND #102 > 2 AND #105 > 2, 'Heart Failure', If(#100 > 5 AND #101 > 2 AND #102 > 2 AND #103 > 2, 'Pneumonia', '')))", 'OutputParamId': 0, 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}]}
+
+STEP 4 : Let's upload that! 
+
+😭 Something went wrong... I'm sorry... Here is additional info about the issue
+⚠️ Error code: 404
+<!DOCTYPE html>
+<html lang=en>
+  <meta charset=utf-8>
+  <meta name=viewport content="initial-scale=1, minimum-scale=1, width=device-width">
+  <title>Error 404 (Not Found)!!1</title>
+  <style>
+    *{margin:0;padding:0}html,code{font:15px/22px arial,sans-serif}html{background:#fff;color:#222;padding:15px}body{margin:7% auto 0;max-width:390px;min-height:180px;padding:30px 0 15px}* > body{background:url(//www.google.com/images/errors/robot.png) 100% 5px no-repeat;padding-right:205px}p{margin:11px 0 22px;overflow:hidden}ins{color:#777;text-decoration:none}a img{border:0}@media screen and (max-width:772px){body{background:none;margin-top:0;max-width:none;padding-right:0}}#logo{background:url(//www.google.com/images/branding/googlelogo/1x/googlelogo_color_150x54dp.png) no-repeat;margin-left:-5px}@media only screen and (min-resolution:192dpi){#logo{background:url(//www.google.com/images/branding/googlelogo/2x/googlelogo_color_150x54dp.png) no-repeat 0% 0%/100% 100%;-moz-border-image:url(//www.google.com/images/branding/googlelogo/2x/googlelogo_color_150x54dp.png) 0}}@media only screen and (-webkit-min-device-pixel-ratio:2){#logo{background:url(//www.google.com/images/branding/googlelogo/2x/googlelogo_color_150x54dp.png) no-repeat;-webkit-background-size:100% 100%}}#logo{display:inline-block;height:54px;width:150px}
+  </style>
+  <a href=//www.google.com/><span id=logo aria-label=Google></span></a>
+  <p><b>404.</b> <ins>That’s an error.</ins>
+  <p>The requested URL <code>/api/v1/Rules/rule</code> was not found on this server.  <ins>That’s all we know.</ins>
+
