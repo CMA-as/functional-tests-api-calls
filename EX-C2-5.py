@@ -18,6 +18,8 @@ import requests
 import sys
 from Logger import Logger
 from datetime import datetime
+import json
+
 
 
 HR_PARAM_ID = 2001
@@ -39,6 +41,8 @@ print(f"Hello! Let's create the rule for the clinical scenario {CLINICAL_SCENARI
 print("I will need some information about the rule and the API")
 guid_rule = input("⚙️ First: are you updating an existing rule? If so, insert the guid, if not, leave empty: ") 
 guid_rule = guid_rule.strip() if guid_rule.strip() == "" else uuid.uuid4()
+
+
 sys.stdout.log_user_input(guid_rule)
 
 
@@ -68,16 +72,18 @@ sys.stdout.log_user_input(domain)
 
 print("\nThank you! I have everything that I need now 😊. \nI will keep you updated about the steps that I am doing\n")
 
+#to do Chiara, check
+guid_rule=uuid.uuid4()
+
 #Creation and validation of expressions
-print("STEP 1 : Creation of expression\n")
-expression = f"Advisory((#{HR_PARAM_ID} > {HR_UPPER_THRESHOLD} OR #{HR_PARAM_ID}<{HR_LOWER_THRESHOLD} ) AND (#{ABP_PARAM_ID} > {ABP_UPPER_THRESHOLD} OR #{ABP_PARAM_ID} < {ABP_LOWER_THRESHOLD}),'message of advisory',  2,'message of advisory')"
+input("STEP 1 : Creation of expression\n")
+expression = f"Advisory(((#{HR_PARAM_ID} > {HR_UPPER_THRESHOLD}) OR (#{HR_PARAM_ID} < {HR_LOWER_THRESHOLD})) AND ((#{ABP_PARAM_ID} > {ABP_UPPER_THRESHOLD}) OR (#{ABP_PARAM_ID} < {ABP_LOWER_THRESHOLD})),'message of advisory',  2,'message of advisory')"
 print(f"    This is the expression that I will use: ")
 print(f"    {expression}\n")
 
-#check_correctness(expression)
 
 #Creation of formula
-print("STEP 2 : Creation of the formula\n")
+input("STEP 2 : Creation of the formula\n") #TODO: maybe he has corrected "Threashold"? To be checked on the Swagger
 
 formula =  { 
         "Expression": expression, 
@@ -89,13 +95,21 @@ formula =  {
     } 
 
 print("    This is the formula that we will use")
-print(f"    {formula}\n")
+print(json.dumps(formula, indent=4))
+
+try:
+    json.dumps(formula)
+    print("✅ 'formula' is JSON-serializable.")
+except TypeError as e:
+    print("❌ 'formula' is NOT JSON-serializable.")
+    print(f"Error: {e}")
+
 
 #Creation of rule
-print("STEP 3 : Creation of the rule\n")
+input("STEP 3 : Creation of the rule\n")
 
 description = title_of_rule
-locations = [int(item.strip()) for item in beds_string.split(",")]
+locations = [str(item.strip()) for item in beds_string.split(",") if item.strip()]
 stop_at_first_exception = False if stop_at_first_exception_string.lower() == "n" else True
 
 rule = { 
@@ -108,12 +122,25 @@ rule = {
 }
 
 print("    This is the rule that we will use")
-print(f"    {rule}\n")
+print(json.dumps(rule, indent=4))
+
+try:
+    json.dumps(rule)
+    print("✅ 'rule' is JSON-serializable.")
+except TypeError as e:
+    print("❌ 'rule' is NOT JSON-serializable.")
+    print(f"Error: {e}")
 
 #POST request
-print("STEP 4 : Let's upload that! \n")
-url = f"{domain}/api/v1/Rules/rule?ruleId={guid_rule}"
+input("STEP 4 : Let's upload that! \n")
+url = f"{domain}/api/v1/Rules/rules/rule?ruleId={guid_rule}"
+
 response = requests.post(url, json=rule, verify=False)
+
+print(f"    URL: {url}")
+print("    JSON payload:")
+print(json.dumps(rule, indent=4)) #TODO: if still it doesn't work, let's crosscheck by using this paylod in the swagger
+
 
 
 if response.status_code == 200:
@@ -122,3 +149,7 @@ else:
     print(f"😭 Something went wrong... I'm sorry... Here is additional info about the issue")
     print(f"⚠️ Error code: {response.status_code}")
     print(f"{response.text}")
+
+
+print("The logs have been saved in the 'logs' folder")
+input("Have a nice day! ✨ (Press Enter to close)")
