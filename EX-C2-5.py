@@ -151,3 +151,30 @@ else:
 
 print("The logs have been saved in the 'logs' folder")
 input("Have a nice day! ✨ (Press Enter to close)")
+
+
+"""
+GUID: 16f2d5e3-ced6-4e66-a620-e000e6cdf1df
+"""
+
+"""
+    {
+
+      "Description": "EX-C2-5 - post-operative - bleeding advisory",
+      "StopAtFirstException": false,
+      "Locations": [
+        "4"
+      ],
+      "Formulas": [
+        {
+          "Expression": "Advisory((#2001 > 120 OR #2001<40 ) AND (#3029 > 140 OR #3029 < 60),'code id of advisory',  2,'message of advisory')",
+          "OutputParamId": 0,
+          "OutputUnitId": 8,
+          "ValidityQuantThreashold": 0,
+          "ValiditySpreadThreashold": 0,
+          "DecimalPosition": 2
+        }
+      ]
+
+    }
+    """
