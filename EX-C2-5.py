@@ -99,9 +99,8 @@ print(json.dumps(formula, indent=4))
 
 try:
     json.dumps(formula)
-    print("✅ 'formula' is JSON-serializable.")
 except TypeError as e:
-    print("❌ 'formula' is NOT JSON-serializable.")
+    print("❌ Error 'formula' is NOT JSON-serializable.")
     print(f"Error: {e}")
 
 
@@ -126,9 +125,8 @@ print(json.dumps(rule, indent=4))
 
 try:
     json.dumps(rule)
-    print("✅ 'rule' is JSON-serializable.")
 except TypeError as e:
-    print("❌ 'rule' is NOT JSON-serializable.")
+    print("❌ Error 'rule' is NOT JSON-serializable.")
     print(f"Error: {e}")
 
 #POST request
