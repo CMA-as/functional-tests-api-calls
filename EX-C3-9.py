@@ -50,7 +50,7 @@ sys.stdout.log_user_input(guid_rule)
 patient_profile = input("👤 What is the patient profile associated to this configuration? (e.g 'Regular', 'Heart failure', 'Pneumonia'..) ")
 sys.stdout.log_user_input(patient_profile)
 
-SPO2_INTEGRAL_THRESHOLD = int(input("    🩺 Lower SpO2 Riemann integral threshold for this profile (e.g. 95): "))
+SPO2_INTEGRAL_THRESHOLD = int(input("    🩺 SpO2 Riemann integral threshold for this profile (e.g. 95): "))
 sys.stdout.log_user_input(f"{SPO2_INTEGRAL_THRESHOLD}")
 SPO2_INTEGRAL_DURATION_SECONDS = int(input("    🩺 How many seconds should the integral be calculated over? (e.g. 60): "))
 sys.stdout.log_user_input(f"{SPO2_INTEGRAL_DURATION_SECONDS}")
