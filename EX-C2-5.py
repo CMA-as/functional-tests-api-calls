@@ -77,13 +77,13 @@ guid_rule=uuid.uuid4()
 
 #Creation and validation of expressions
 input("STEP 1 : Creation of expression\n")
-expression = f"Advisory(((#{HR_PARAM_ID} > {HR_UPPER_THRESHOLD}) OR (#{HR_PARAM_ID} < {HR_LOWER_THRESHOLD})) AND ((#{ABP_PARAM_ID} > {ABP_UPPER_THRESHOLD}) OR (#{ABP_PARAM_ID} < {ABP_LOWER_THRESHOLD})),'message of advisory',  2,'message of advisory')"
+expression = f"Advisory(((#{HR_PARAM_ID} > {HR_UPPER_THRESHOLD}) OR (#{HR_PARAM_ID} < {HR_LOWER_THRESHOLD})) AND ((#{ABP_PARAM_ID} > {ABP_UPPER_THRESHOLD}) OR (#{ABP_PARAM_ID} < {ABP_LOWER_THRESHOLD})),'EX-C2-5-postoperativebleeding',  2,'Potential post-operative bleeding')"
 print(f"    This is the expression that I will use: ")
 print(f"    {expression}\n")
 
 
 #Creation of formula
-input("STEP 2 : Creation of the formula\n") #TODO: maybe he has corrected "Threashold"? To be checked on the Swagger STEP 1
+input("STEP 2 : Creation of the formula\n") 
 
 formula =  { 
         "Expression": expression, 
@@ -133,11 +133,11 @@ except TypeError as e:
 input("STEP 4 : Let's upload that! \n")
 url = f"{domain}/api/v1/Rules/rules/rule?ruleId={guid_rule}"
 
-response = requests.post(url, json=rule, verify=False) #TODO: if the swagger works but the script doesn't, try with this response = requests.post(url, data=json.dumps(rule), headers={"Content-Type": "application/json"}) STEP 3
+response = requests.post(url, json=rule, verify=False) 
 
 print(f"    URL: {url}")
 print("    JSON payload:")
-print(json.dumps(rule, indent=4)) #TODO: if still it doesn't work, let's crosscheck by using this paylod in the swagger STEP 2
+print(json.dumps(rule, indent=4))
 
 
 
@@ -159,7 +159,6 @@ GUID: 16f2d5e3-ced6-4e66-a620-e000e6cdf1df
 
 """
     {
-
       "Description": "EX-C2-5 - post-operative - bleeding advisory",
       "StopAtFirstException": false,
       "Locations": [
@@ -175,6 +174,5 @@ GUID: 16f2d5e3-ced6-4e66-a620-e000e6cdf1df
           "DecimalPosition": 2
         }
       ]
-
     }
-    """
+"""

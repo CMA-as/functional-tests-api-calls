@@ -104,10 +104,8 @@ sys.stdout.log_user_input(f"{ATTR_BP_PARAM_ID}")
 
 print("\nThank you! I have everything that I need now 😊. \nI will keep you updated about the steps that I am doing\n")
 
-#TODO: complete with the following steps of rule creation and upload
-
 #Creation and validation of expressions
-print("STEP 1 : Creation of expressions\n")
+input("STEP 1 : Creation of expressions\n")
 
 ATTR_RR_EXPRESSION = f"If(#{RR_PARAM_ID} <= 8, 1, If(#{RR_PARAM_ID} <= 11, 1, If(#{RR_PARAM_ID} <= 20, 0, If(#{RR_PARAM_ID} <= 24, 2, 3))))"
 ATTR_SPO2_EXPRESSION = f"If(#{SPO2_PARAM_ID} <= 91, 3, If(#{SPO2_PARAM_ID} <= 93, 2, If(#{SPO2_PARAM_ID} <= 95, 1, 0)))"
@@ -124,8 +122,9 @@ print(f"    Calculation TEMP MEWS attribute: {ATTR_TEMP_EXPRESSION}")
 print(f"    Calculation BP MEWS attribute: {ATTR_BP_EXPRESSION}")
 print(f"    Calculation HR MEWS attribute: {ATTR_HR_EXPRESSION}")
 print(f"    Calculation of MEWS score: {MEWS_SCORE_EXPRESSION}")
+print(f"    Advisory: {ADVISORY_GENERATION_EXPRESSION}")
 
-print("STEP 2 : Creation of the formulas\n")
+input("STEP 2 : Creation of the formulas\n")
 
 formula_rr_attr =  { 
         "Expression": ATTR_RR_EXPRESSION, 
@@ -200,7 +199,7 @@ print(f"    {formula_mews_score}\n")
 print(f"    {formula_advisory}\n")
 
 #Creation of rule
-print("STEP 3 : Creation of the rule\n")
+input("STEP 3 : Creation of the rule\n")
 
 description = title_of_rule
 locations = [int(item.strip()) for item in beds_string.split(",")]
@@ -225,7 +224,7 @@ print("    This is the rule that we will use")
 print(f"    {rule}\n")
 
 #POST request
-print("STEP 4 : Let's upload that! \n")
+input("STEP 4 : Let's upload that! \n")
 url = f"{domain}/api/v1/Rules/rule?ruleId={guid_rule}"
 response = requests.post(url, json=rule, verify=False)
 
