@@ -85,6 +85,9 @@ sys.stdout.log_user_input(domain)
 
 print("\nThank you! I have everything that I need now 😊. \nI will keep you updated about the steps that I am doing\n")
 
+#to do Chiara, check
+guid_rule=uuid.uuid4()
+
 #Creation and validation of expressions
 input("STEP 1 : Creation of expressions\n")
 
@@ -128,9 +131,10 @@ print(f"    {rule}\n")
 
 #POST request
 input("STEP 4 : Let's upload that! \n")
-url = f"{domain}/api/v1/Rules/rule?ruleId={guid_rule}"
+url = f"{domain}/api/v1/Rules/rules/rule?ruleId={guid_rule}"
+input(f"{url}")
 response = requests.post(url, json=rule, verify=False)
-
+input(f"{response}")
 
 if response.status_code == 200:
     print(f"🎉 NICE! The rule {guid_rule} has been successfully uploaded")

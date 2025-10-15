@@ -88,6 +88,9 @@ sys.stdout.log_user_input(f"{SPO2_INTEGRAL_PARAM_ID}")
 
 print("\nThank you! I have everything that I need now 😊. \nI will keep you updated about the steps that I am doing\n")
 
+#to do Chiara, check
+guid_rule=uuid.uuid4()
+
 #Creation and validation of expressions
 input("STEP 1 : Creation of expressions\n")
 INTEGRAL_EXPRESSION = f"Integral({SPO2_PARAM_ID},{SPO2_INTEGRAL_DURATION_SECONDS},{SPO2_INTEGRAL_THRESHOLD},true,2)"
@@ -144,13 +147,13 @@ print(f"    {rule}\n")
 
 #POST request
 input("STEP 4 : Let's upload that! \n")
-url = f"{domain}/api/v1/Rules/rule?ruleId={guid_rule}"
+url = f"{domain}/api/v1/Rules/rules/rule?ruleId={guid_rule}"
 response = requests.post(url, json=rule, verify=False)
 
 
 if response.status_code == 200:
-    print(f"🎉 NICE! The rule {guid_rule} has been successfully uploaded")
+    input(f"🎉 NICE! The rule {guid_rule} has been successfully uploaded")
 else:
     print(f"😭 Something went wrong... I'm sorry... Here is additional info about the issue")
     print(f"⚠️ Error code: {response.status_code}")
-    print(f"{response.text}")
+    input(f"{response.text}")

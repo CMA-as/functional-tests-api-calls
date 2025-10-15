@@ -18,8 +18,10 @@ title_of_rule = input("🔎 Insert the keyword you are looking for (e.g, code of
 sys.stdout.log_user_input(title_of_rule)
 
 # Make the GET request
-url = f"{domain}/api/v1/Rules/rule"
+url = f"{domain}/api/v1/Rules/rules/rule"
 response = requests.get(url, verify=False)
+
+input("After response ")
 
 if response.status_code == 200:
     print(f"🎉 Data has been successfully retrieved. Here is a snapshot:")
@@ -40,9 +42,11 @@ if response.status_code == 200:
 
     # Total number of rules
     total_rules = len(rules)
+   
 
     # Filter rules containing the keyword
-    matching_rules = [rule for rule in rules if title_of_rules.lower() in rule.get("Description", "").lower()]
+    matching_rules = [rule for rule in rules if title_of_rule.lower() in rule.get("Description", "").lower()]
+
 
     # Number of matching rules
     matching_count = len(matching_rules)
@@ -51,9 +55,9 @@ if response.status_code == 200:
     matching_ids = [rule["Id"] for rule in matching_rules]
 
     # Output results
-    print("Total Rules:", total_rules)
-    print("Matching Rules:", matching_count)
-    print("Matching Rule IDs:", matching_ids)
+    print("Total Rules:" + str(total_rules))
+    print("Matching Rules:" + str(matching_count))
+    print("Matching Rule IDs:" + str(matching_ids))
 
     export = False if input(" ✒️ Do you want me to export the Rules that match your search in a txt file? (Y/N)").strip().lower() == "n" else True
 
@@ -70,5 +74,5 @@ if response.status_code == 200:
 else:
     print(f"😭 Something went wrong... I'm sorry... Here is additional info about the issue")
     print(f"⚠️ Error code: {response.status_code}")
-    print(f"{response.text}")
+    input(f"{response.text}")
 
