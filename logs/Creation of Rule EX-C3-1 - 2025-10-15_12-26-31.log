@@ -1,0 +1,126 @@
+Hello! Let's create the rule for the clinical scenario EX-C3-1 😊
+I will need some information about the rule and the API
+⚙️ First: are you updating an existing rule? If so, insert the guid, if not, leave empty: 8e95d50f-8319-47cc-867d-f2a5a0ce5f84
+👤 What is the patient profile associated to this configuration? (e.g 'Regular', 'COPD', 'Post-operative'..) icu
+    🩺 Lower MEWS score threshold for this profile (e.g. 5): 5
+    🩺 Lower HR attribute score threshold for this profile (e.g. 2): 2
+    🩺 Lower RR attribute score threshold for this profile (e.g. 2): 2
+    🩺 Lower Temp attribute score threshold for this profile (e.g. 2): 2
+    🩺 Lower SpO2 attribute score threshold for this profile (e.g. 2): 2
+    🩺 Lower BP attribute score threshold for this profile (e.g. 2): 2
+✒️ What name do you want to give to the rule? (Keep in mind that the name will start with EX-C3-1 - icu ):EX-C3-1 - icu - adv
+🛌 Beds on which the rule has to run (if more than one, divide the numbers with a comma): ['4']
+❓ Do you want the rule to stop if one of the expressions raise an error? (Type Y or N): True
+🌍 Enter the domain of the API (Press Enter for https://digistat.sasicu.ascom-demo.local): https://digistat.sasicu.ascom-demo.local
+To begin we need the IDs of the parameters to store the following calculated parameters:
+ MEWS score 
+ MEWS attribute of HR 
+ MEWS attribute of RR 
+ MEWS attribute of Temp 
+ MEWS attribute of SpO2 
+ MEWS attribute of BP
+Have you already created them? (y/n)⚙️ Parameter ID of MEWS score: 1
+⚙️ Parameter ID of MEWS attribute of HR: 2
+⚙️ Parameter ID of MEWS attribute of RR: 3
+⚙️ Parameter ID of MEWS attribute of Temp: 4
+⚙️ Parameter ID of MEWS attribute of SpO2: 5
+⚙️ Parameter ID of MEWS attribute of BP: 6
+
+Thank you! I have everything that I need now 😊. 
+I will keep you updated about the steps that I am doing
+
+STEP 1 : Creation of expressions
+    These are the expressions that I will use: 
+
+    Calculation RR MEWS attribute: If(#4004 <= 8, 1, If(#4004 <= 11, 1, If(#4004 <= 20, 0, If(#4004 <= 24, 2, 3))))
+    Calculation SPO2 MEWS attribute: If(#7501 <= 91, 3, If(#7501 <= 93, 2, If(#7501 <= 95, 1, 0)))
+    Calculation TEMP MEWS attribute: If(#6034 <= 35.0, 3, If(#6034 <= 36.0, 1, If(#6034 <= 38.0, 0, If(#6034 <= 39.0, 1, 2))))
+    Calculation BP MEWS attribute: If(#3027 <= 90, 3, If(#3027 <= 100, 2, If(#3027 <= 110, 1, 0)))
+    Calculation HR MEWS attribute: If(#2001 <= 40, 3, If(#2001 <= 50, 1, If(#2001 <= 90, 0, If(#2001 <= 100, 1, If(#2001 <= 130, 2, 3)))))
+    Calculation of MEWS score: #4004 + #7501 + #6034 + #3027 + #2001
+    Advisory: Advisory((#1 > 5 AND #2 > 2 AND #3 > 2 AND #6 > 2) OR (#1 > 5 AND #2 > 2 AND #3 > 2 AND #4 > 2) OR (#1 > 5), 'MEWS score '_(#1)_' . Potential complication : '_If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #6 > 2, 'Heart Failure', If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #4 > 2, 'Pneumonia', '')), 2, 'MEWS score '_(#1)_' . Potential complication : '_If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #6 > 2, 'Heart Failure', If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #4 > 2, 'Pneumonia', '')))
+STEP 2 : Creation of the formulas
+    These are the formulas that we will use
+
+    {'Expression': 'If(#4004 <= 8, 1, If(#4004 <= 11, 1, If(#4004 <= 20, 0, If(#4004 <= 24, 2, 3))))', 'OutputParamId': '3', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': 'If(#7501 <= 91, 3, If(#7501 <= 93, 2, If(#7501 <= 95, 1, 0)))', 'OutputParamId': '5', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': 'If(#2001 <= 40, 3, If(#2001 <= 50, 1, If(#2001 <= 90, 0, If(#2001 <= 100, 1, If(#2001 <= 130, 2, 3)))))', 'OutputParamId': '2', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': 'If(#6034 <= 35.0, 3, If(#6034 <= 36.0, 1, If(#6034 <= 38.0, 0, If(#6034 <= 39.0, 1, 2))))', 'OutputParamId': '4', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': 'If(#3027 <= 90, 3, If(#3027 <= 100, 2, If(#3027 <= 110, 1, 0)))', 'OutputParamId': '6', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': '#4004 + #7501 + #6034 + #3027 + #2001', 'OutputParamId': '1', 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+    {'Expression': "Advisory((#1 > 5 AND #2 > 2 AND #3 > 2 AND #6 > 2) OR (#1 > 5 AND #2 > 2 AND #3 > 2 AND #4 > 2) OR (#1 > 5), 'MEWS score '_(#1)_' . Potential complication : '_If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #6 > 2, 'Heart Failure', If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #4 > 2, 'Pneumonia', '')), 2, 'MEWS score '_(#1)_' . Potential complication : '_If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #6 > 2, 'Heart Failure', If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #4 > 2, 'Pneumonia', '')))", 'OutputParamId': 0, 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+STEP 3 : Creation of the rule
+    This is the rule that we will use
+{
+    "Description": "EX-C3-1 - icu - adv",
+    "Locations": [
+        "4"
+    ],
+    "StopAtFirstException": true,
+    "Formulas": [
+        {
+            "Expression": "If(#4004 <= 8, 1, If(#4004 <= 11, 1, If(#4004 <= 20, 0, If(#4004 <= 24, 2, 3))))",
+            "OutputParamId": "3",
+            "OutputUnitId": 8,
+            "ValidityQuantThreashold": 0,
+            "ValiditySpreadThreashold": 0,
+            "DecimalPosition": 2
+        },
+        {
+            "Expression": "If(#7501 <= 91, 3, If(#7501 <= 93, 2, If(#7501 <= 95, 1, 0)))",
+            "OutputParamId": "5",
+            "OutputUnitId": 8,
+            "ValidityQuantThreashold": 0,
+            "ValiditySpreadThreashold": 0,
+            "DecimalPosition": 2
+        },
+        {
+            "Expression": "If(#6034 <= 35.0, 3, If(#6034 <= 36.0, 1, If(#6034 <= 38.0, 0, If(#6034 <= 39.0, 1, 2))))",
+            "OutputParamId": "4",
+            "OutputUnitId": 8,
+            "ValidityQuantThreashold": 0,
+            "ValiditySpreadThreashold": 0,
+            "DecimalPosition": 2
+        },
+        {
+            "Expression": "If(#3027 <= 90, 3, If(#3027 <= 100, 2, If(#3027 <= 110, 1, 0)))",
+            "OutputParamId": "6",
+            "OutputUnitId": 8,
+            "ValidityQuantThreashold": 0,
+            "ValiditySpreadThreashold": 0,
+            "DecimalPosition": 2
+        },
+        {
+            "Expression": "If(#2001 <= 40, 3, If(#2001 <= 50, 1, If(#2001 <= 90, 0, If(#2001 <= 100, 1, If(#2001 <= 130, 2, 3)))))",
+            "OutputParamId": "2",
+            "OutputUnitId": 8,
+            "ValidityQuantThreashold": 0,
+            "ValiditySpreadThreashold": 0,
+            "DecimalPosition": 2
+        },
+        {
+            "Expression": "#4004 + #7501 + #6034 + #3027 + #2001",
+            "OutputParamId": "1",
+            "OutputUnitId": 8,
+            "ValidityQuantThreashold": 0,
+            "ValiditySpreadThreashold": 0,
+            "DecimalPosition": 2
+        },
+        {
+            "Expression": "Advisory((#1 > 5 AND #2 > 2 AND #3 > 2 AND #6 > 2) OR (#1 > 5 AND #2 > 2 AND #3 > 2 AND #4 > 2) OR (#1 > 5), 'MEWS score '_(#1)_' . Potential complication : '_If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #6 > 2, 'Heart Failure', If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #4 > 2, 'Pneumonia', '')), 2, 'MEWS score '_(#1)_' . Potential complication : '_If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #6 > 2, 'Heart Failure', If(#1 > 5 AND #2 > 2 AND #3 > 2 AND #4 > 2, 'Pneumonia', '')))",
+            "OutputParamId": 0,
+            "OutputUnitId": 8,
+            "ValidityQuantThreashold": 0,
+            "ValiditySpreadThreashold": 0,
+            "DecimalPosition": 2
+        }
+    ]
+}
+STEP 4 : Let's upload that! 
