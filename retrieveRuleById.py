@@ -18,7 +18,7 @@ guid_of_rule = input("🔎 Insert the GUID of the Rule you are looking for: ").s
 sys.stdout.log_user_input(guid_of_rule)
 
 # Make the GET request
-url = f"{domain}/api/v1/Rules/rule?ruleId={guid_of_rule}"
+url = f"{domain}/api/v1/Rules/rules/rule?ruleId={guid_of_rule}"
 response = requests.get(url, verify=False)
 
 if response.status_code == 200:
@@ -55,12 +55,12 @@ if response.status_code == 200:
                 for rule in rules:
                     file.write(f"Id: {rule['Id']}, Description: {rule['Description']}\n")
             print(f"✅ {matching_count} rules have been successfully exported in the file {filename}")
-            print("Bye bye! 😊")
+            input("Bye bye! 😊")
         else:
-            print("Ok, bye! 😊")
+            input("Ok, bye! 😊")
 
     else:
-        print(f"However, no rules with the id {guid_of_rule} have been found. Sorry")
+        input(f"However, no rules with the id {guid_of_rule} have been found. Sorry")
 else:
     print(f"😭 Something went wrong... I'm sorry... Here is additional info about the issue")
     print(f"⚠️ Error code: {response.status_code}")

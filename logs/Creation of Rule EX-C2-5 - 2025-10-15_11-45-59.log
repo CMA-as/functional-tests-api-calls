@@ -1,8 +1,0 @@
-Hello! Let's create the rule for the clinical scenario EX-C2-5 😊
-I will need some information about the rule and the API
-⚙️ First: are you updating an existing rule? If so, insert the guid, if not, leave empty: e4ce0a82-8605-498a-92a9-e4dd58135ff0
-👤 What is the patient profile associated to this configuration? (e.g 'Regular', 'COPD', 'Post-operative'..) post-op
-    🩺 Lower HR threshold for this profile (e.g. 40): 40
-    🩺 Upper HR threshold for this profile (e.g. 120): 120
-    🩺 Lower ABP threshold for this profile (e.g. 60): 60
-    🩺 Upper ABP threshold for this profile (e.g. 140): 140

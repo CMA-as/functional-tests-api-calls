@@ -14,7 +14,8 @@ print("I will need some information about the rule and the API")
 domain = input("🌍 Enter the domain of the API (Press Enter for https://digistat.sasicu.ascom-demo.local): ").strip()
 domain = "https://digistat.sasicu.ascom-demo.local" if domain.strip() == "" else domain
 sys.stdout.log_user_input(domain)
-title_of_rule = input("🔎 Insert the keyword you are looking for (e.g, code of clinical scenarios...): ")
+
+title_of_rule = input("🔎 Insert the keyword in the title you are looking for (e.g, code of clinical scenarios...): ")
 sys.stdout.log_user_input(title_of_rule)
 
 # Make the GET request
@@ -68,9 +69,9 @@ if response.status_code == 200:
             for rule in matching_rules:
                 file.write(f"Id: {rule['Id']}, Description: {rule['Description']}\n")
         print(f"✅ {matching_count} rules have been successfully exported in the file {filename}")
-        print("Bye bye! 😊")
+        input("Bye bye! 😊")
     else:
-        print("Ok, bye! 😊")
+        input("Ok, bye! 😊")
 else:
     print(f"😭 Something went wrong... I'm sorry... Here is additional info about the issue")
     print(f"⚠️ Error code: {response.status_code}")

@@ -43,7 +43,6 @@ print("I will need some information about the rule and the API")
 guid_rule = config_guid_rule()
 sys.stdout.log_user_input(str(guid_rule))
 
-
 patient_profile = config_patient_profile()
 sys.stdout.log_user_input(patient_profile)
 
