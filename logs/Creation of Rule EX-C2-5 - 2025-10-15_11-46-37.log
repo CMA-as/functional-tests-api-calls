@@ -1,0 +1,11 @@
+Hello! Let's create the rule for the clinical scenario EX-C2-5 😊
+I will need some information about the rule and the API
+⚙️ First: are you updating an existing rule? If so, insert the guid, if not, leave empty: 9d78cdfc-5c65-4698-be29-f27ce783a7e1
+👤 What is the patient profile associated to this configuration? (e.g 'Regular', 'COPD', 'Post-operative'..) post-op
+    🩺 Lower HR threshold for this profile (e.g. 40): 40
+    🩺 Upper HR threshold for this profile (e.g. 120): 120
+    🩺 Lower ABP threshold for this profile (e.g. 60): 60
+    🩺 Upper ABP threshold for this profile (e.g. 140): 140
+✒️ What name do you want to give to the rule? (Keep in mind that the name will start with EX-C2-5 - post-op ):EX-C2-5 - post-op - advisory bleeding
+EX-C2-5 - post-op - advisory bleeding
+🛌 Beds on which the rule has to run (if more than one, divide the numbers with a comma): 

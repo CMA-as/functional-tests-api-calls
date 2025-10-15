@@ -20,10 +20,11 @@ from Logger import Logger
 from datetime import datetime
 import json
 from parameter_ids import *
-from support_functions import *
 
 
 
+#HR_PARAM_ID = 2001
+#ABP_PARAM_ID = 3029
 HR_LOWER_THRESHOLD = 40
 HR_UPPER_THRESHOLD = 120
 ABP_LOWER_THRESHOLD = 40
@@ -39,14 +40,14 @@ sys.stdout = Logger(f'{LOGS_FOLDER}Creation of Rule {CLINICAL_SCENARIO} - {now_f
 #User inserts IDs,thresholds,locations
 print(f"Hello! Let's create the rule for the clinical scenario {CLINICAL_SCENARIO} 😊")
 print("I will need some information about the rule and the API")
+guid_rule = input("⚙️ First: are you updating an existing rule? If so, insert the guid, if not, leave empty: ") 
+guid_rule = guid_rule.strip() if len(guid_rule.strip()) > 0 else uuid.uuid4()
 
-guid_rule = config_guid_rule()
 sys.stdout.log_user_input(str(guid_rule))
 
 
-patient_profile = config_patient_profile()
+patient_profile = input("👤 What is the patient profile associated to this configuration? (e.g 'Regular', 'COPD', 'Post-operative'..) ")
 sys.stdout.log_user_input(patient_profile)
-
 HR_LOWER_THRESHOLD = int(input("    🩺 Lower HR threshold for this profile (e.g. 40): "))
 sys.stdout.log_user_input(f"{HR_LOWER_THRESHOLD}")
 HR_UPPER_THRESHOLD = int(input("    🩺 Upper HR threshold for this profile (e.g. 120): "))
@@ -56,16 +57,17 @@ sys.stdout.log_user_input(f"{ABP_LOWER_THRESHOLD}")
 ABP_UPPER_THRESHOLD = int(input("    🩺 Upper ABP threshold for this profile (e.g. 140): "))
 sys.stdout.log_user_input(f"{ABP_UPPER_THRESHOLD}")
 
-title_of_rule = config_title_of_rule(CLINICAL_SCENARIO,patient_profile)
+title_of_rule = CLINICAL_SCENARIO + " - " + patient_profile + " - " + input(f"✒️ What name do you want to give to the rule? (Keep in mind that the name will start with {CLINICAL_SCENARIO} - {patient_profile} ):")
 sys.stdout.log_user_input(title_of_rule)
 
-locations = config_bed_locations()
-sys.stdout.log_user_input(str(locations))
+beds_string = input("🛌 Beds on which the rule has to run (if more than one, divide the numbers with a comma): ")
+sys.stdout.log_user_input(beds_string)
 
-stop_at_first_exception = config_stops_on_exception()
-sys.stdout.log_user_input(str(stop_at_first_exception))
+stop_at_first_exception_string = input("❓ Do you want the rule to stop if one of the expressions raise an error? (Type Y or N): ")
+sys.stdout.log_user_input(stop_at_first_exception_string)
 
-domain = config_api_domain()
+domain = input("🌍 Enter the domain of the API (Press Enter for https://digistat.sasicu.ascom-demo.local): ").strip()
+domain = "https://digistat.sasicu.ascom-demo.local" if domain.strip() == "" else domain
 sys.stdout.log_user_input(domain)
 
 print("\nThank you! I have everything that I need now 😊. \nI will keep you updated about the steps that I am doing\n")
@@ -104,8 +106,12 @@ except TypeError as e:
 #Creation of rule
 input("STEP 3 : Creation of the rule\n")
 
+description = title_of_rule
+locations = [str(item.strip()) for item in beds_string.split(",") if item.strip()]
+stop_at_first_exception = False if stop_at_first_exception_string.lower() == "n" else True
+
 rule = { 
-"Description": title_of_rule, 
+"Description": description, 
 "Locations": locations, 
 "StopAtFirstException": stop_at_first_exception, 
 "Formulas": [ 
@@ -124,8 +130,15 @@ except TypeError as e:
 
 #POST request
 input("STEP 4 : Let's upload that! \n")
+url = f"{domain}/api/v1/Rules/rules/rule?ruleId={guid_rule}"
 
-response = upload_rule(domain,guid_rule,rule)
+response = requests.post(url, json=rule, verify=False) 
+
+print(f"    URL: {url}")
+print("    JSON payload:")
+print(json.dumps(rule, indent=4))
+
+
 
 if response.status_code == 200:
     print(f"🎉 NICE! The rule {guid_rule} has been successfully uploaded")
