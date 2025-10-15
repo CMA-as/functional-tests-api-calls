@@ -22,9 +22,6 @@ import json
 from parameter_ids import *
 
 
-
-#HR_PARAM_ID = 2001
-#ABP_PARAM_ID = 3029
 HR_LOWER_THRESHOLD = 40
 HR_UPPER_THRESHOLD = 120
 ABP_LOWER_THRESHOLD = 40

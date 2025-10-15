@@ -1,0 +1,49 @@
+Hello! Let's create the rule for the clinical scenario EX-C2-7-2 😊
+I will need some information about the rule and the API
+⚙️ First: are you updating an existing rule? If so, insert the guid, if not, leave empty: b1f2d240-852a-48e6-a094-fcfe9baf4e6b
+b1f2d240-852a-48e6-a094-fcfe9baf4e6b
+👤 What is the patient profile associated to this configuration? (e.g 'Regular', 'COPD', 'Post-operative'..) nicu
+nicu
+    🩺 What value of Sp02 should trigger the advisory? (e.g. 90): 90
+    🩺 What is the priority of the Advisory of low Sp=2? (e.g. 3): 3
+✒️ What name do you want to give to the rule? (Keep in mind that the name will start with EX-C2-7-2 - nicu ):EX-C2-7-2 - nicu - spo2 dips
+EX-C2-7-2 - nicu - spo2 dips
+🛌 Beds on which the rule has to run (if more than one, divide the numbers with a comma): ['4']
+['4']
+❓ Do you want the rule to stop if one of the expressions raise an error? (Type Y or N): True
+True
+🌍 Enter the domain of the API (Press Enter for https://digistat.sasicu.ascom-demo.local): https://digistat.sasicu.ascom-demo.local
+https://digistat.sasicu.ascom-demo.local
+
+Thank you! I have everything that I need now 😊. 
+I will keep you updated about the steps that I am doing
+
+STEP 1 : Creation of expressions
+    These are the expressions that I will use: 
+
+    Advisory: Advisory(( #7501 < 90),'EX-C2-7-2-lowspO2',3,'Low SpO2 detected')
+STEP 2 : Creation of the formulas
+    These are the formulas that we will use
+
+    {'Expression': "Advisory(( #7501 < 90),'EX-C2-7-2-lowspO2',3,'Low SpO2 detected')", 'OutputParamId': 0, 'OutputUnitId': 8, 'ValidityQuantThreashold': 0, 'ValiditySpreadThreashold': 0, 'DecimalPosition': 2}
+
+STEP 3 : Creation of the rule
+    This is the rule that we will use
+{
+    "Description": "EX-C2-7-2 - nicu - spo2 dips",
+    "Locations": [
+        "4"
+    ],
+    "StopAtFirstException": true,
+    "Formulas": [
+        {
+            "Expression": "Advisory(( #7501 < 90),'EX-C2-7-2-lowspO2',3,'Low SpO2 detected')",
+            "OutputParamId": 0,
+            "OutputUnitId": 8,
+            "ValidityQuantThreashold": 0,
+            "ValiditySpreadThreashold": 0,
+            "DecimalPosition": 2
+        }
+    ]
+}
+STEP 4 : Let's upload that! 
