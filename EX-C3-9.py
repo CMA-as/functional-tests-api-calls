@@ -91,7 +91,7 @@ print("\nThank you! I have everything that I need now 😊. \nI will keep you up
 
 #Creation and validation of expressions
 input("STEP 1 : Creation of expressions\n")
-INTEGRAL_EXPRESSION = f"Integral({SPO2_PARAM_ID},{SPO2_INTEGRAL_DURATION_SECONDS},{SPO2_INTEGRAL_THRESHOLD},true,2) / {int(SPO2_INTEGRAL_DURATION_SECONDS/20)}"
+INTEGRAL_EXPRESSION = f"Integral({SPO2_PARAM_ID},{SPO2_INTEGRAL_DURATION_SECONDS},{SPO2_INTEGRAL_THRESHOLD},True,2) / {int(SPO2_INTEGRAL_DURATION_SECONDS/20)}"
 ADVISORY_GENERATION_EXPRESSION = f"Advisory(( #{SPO2_INTEGRAL_PARAM_ID} > {ADVISORY_INTEGRAL_TRIGGER}),'EX-C3-9-multiplespo2dips',{ADVISORY_PRIORITY},'Multiple SpO2 dips in the last {SPO2_INTEGRAL_DURATION_SECONDS} seconds detected')"
 
 
