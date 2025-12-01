@@ -4,7 +4,8 @@ from tkinter import ttk, messagebox
 import pandas as pd
 
 # === CONFIG ===
-excel_file = 'data.xlsx'  # <-- Put the local path to your downloaded Excel file
+excel_file = 'Patients.xlsx'
+medical_devices_file = 'Medical Devices.xlsx'
 sheet_beds = '3. Link of "Profiles" to beds'
 sheet_profiles = '2. Creation of "profiles"'
 

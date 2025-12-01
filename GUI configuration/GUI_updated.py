@@ -158,69 +158,171 @@ def build_available_devices():
 
 AVAILABLE_DEVICES = build_available_devices()  # <<< NEW >>>
 
-# === MAIN UI ===
-root = tk.Tk()
-root.title("Bed Profile Manager")
-root.geometry("1180x1040")  # <<< NEW >>> increased height to fit multi-device manager
-
-tk.Label(root, text="Bed Profile Manager", font=("Arial", 18, "bold")).pack(pady=8)
-
-# Dropdown for existing beds
-tk.Label(root, text="Select Existing Bed ID:", font=("Arial", 12)).pack()
-bed_var = tk.StringVar()
-bed_dropdown = ttk.Combobox(root, textvariable=bed_var, values=df['Bed ID'].astype(str).tolist(), width=20)
-bed_dropdown.pack(pady=4)
-
-# Fields for details
-fields = ['Ward', 'Admission reason', 'Active conditions', 'Comorbidities', 'Predicted risks']
-entries = {}
-form_frame = tk.Frame(root)
-form_frame.pack(pady=8)
-for i, field in enumerate(fields):
-    row = tk.Frame(form_frame)
-    row.grid(row=i, column=0, sticky="w", pady=3)
-    tk.Label(row, text=field + ":", width=18, anchor="w").pack(side="left")
-    ent = tk.Entry(row, width=80)
-    ent.pack(side="left")
-    entries[field] = ent
-
-# === NEW: Connected devices manager (multi-select UI) ===
-devices_row = tk.Frame(form_frame)
-devices_row.grid(row=len(fields), column=0, sticky="w", pady=6)
 
 
+# Save changes
+def save_changes():
+    bed = bed_var.get()
+    if bed in df['Bed ID'].astype(str).values:
+        # 1) Save bed details to Patients.xlsx
+        for field in fields:
+            df.loc[df['Bed ID'].astype(str) == bed, field] = entries[field].get()
+        save_data(df)
 
-# Row 0: label + listbox + remove button
-tk.Label(devices_row, text="Connected devices:", width=18, anchor="w").grid(row=0, column=0, sticky="nw")
-devices_listbox = tk.Listbox(devices_row, selectmode=tk.EXTENDED, width=70, height=6)
-devices_listbox.grid(row=0, column=1, sticky="w")
-tk.Button(devices_row, text="Remove selected", command=lambda: remove_selected_devices()).grid(row=0, column=2, padx=6, sticky="nw")
+        # 2) Save connected devices to Medical Devices.xlsx (Link of "Devices" to beds)
+        current_devices = listbox_items()
+        # Order-preserving de-duplication (case-insensitive)
+        seen = set()
+        ordered_unique = []
+        for d in current_devices:
+            key = d.lower().strip()
+            if key and key not in seen:
+                seen.add(key)
+                ordered_unique.append(d.strip())
 
-# Row 1: add from catalog
-tk.Label(devices_row, text="Add from list:", width=18, anchor="w").grid(row=1, column=0, sticky="w", pady=(6,0))
-available_devices_cb = ttk.Combobox(devices_row, values=AVAILABLE_DEVICES, width=68, state="readonly")
-available_devices_cb.grid(row=1, column=1, sticky="w", pady=(6,0))
-tk.Button(devices_row, text="Add", command=lambda: add_selected_device_from_combo()).grid(row=1, column=2, padx=6, sticky="w", pady=(6,0))
+        # Remove all old links for this bed
+        df_devices_link.drop(df_devices_link[df_devices_link['Bed ID'].astype(str) == bed].index, inplace=True)
+        # Add new links (one row per device)
+        for device in ordered_unique:
+            df_devices_link.loc[len(df_devices_link)] = {'Bed ID': bed, 'Device': device}
+        save_devices_data()
 
-# Row 2: add custom device
-tk.Label(devices_row, text="Add custom:", width=18, anchor="w").grid(row=2, column=0, sticky="w", pady=(6,0))
-custom_device_var = tk.StringVar()
-tk.Entry(devices_row, textvariable=custom_device_var, width=70).grid(row=2, column=1, sticky="w", pady=(6,0))
-tk.Button(devices_row, text="Add", command=lambda: add_custom_device()).grid(row=2, column=2, padx=6, sticky="w", pady=(6,0))
+        # 3) Refresh UI (device list + rules + alarms) and show success
+        refresh_devices_list_ui(bed)
+        kw = search_var.get().strip().lower()
+        show_processing_rules(bed, filter_keyword=(kw if kw else None))
+        messagebox.showinfo("Success", "Changes saved successfully!")
+    else:
+        messagebox.showerror("Error", "Bed not found!")
 
-# Row 3: current devices (read-only comma view for clarity)
-tk.Label(devices_row, text="Current:", width=18, anchor="w").grid(row=3, column=0, sticky="w", pady=(6,0))
-current_devices_var = tk.StringVar(value="")
-tk.Entry(devices_row, textvariable=current_devices_var, width=90, state="readonly").grid(row=3, column=1, columnspan=2, sticky="w", pady=(6,0))
+# Delete bed
+def delete_bed():
+    bed = bed_var.get()
+    if bed in df['Bed ID'].astype(str).values:
+        confirm = messagebox.askyesno("Confirm Delete", f"Delete bed {bed}?")
+        if confirm:
+            df.drop(df[df['Bed ID'].astype(str) == bed].index, inplace=True)
+            bed_dropdown['values'] = df['Bed ID'].astype(str).tolist()
+            bed_var.set('')
 
-# === SEARCH BAR ===
-search_frame = tk.Frame(root)
-search_frame.pack(pady=6, fill="x")
-tk.Label(search_frame, text="Search by threshold parameter:", font=("Arial", 12)).pack(side="left", padx=6)
-search_var = tk.StringVar()
-search_entry = tk.Entry(search_frame, textvariable=search_var, width=30)
-search_entry.pack(side="left", padx=6)
+            # Also remove device links for this bed
+            df_devices_link.drop(df_devices_link[df_devices_link['Bed ID'].astype(str) == bed].index, inplace=True)
+            save_data(df)
+            save_devices_data()
 
+            for field in fields:
+                entries[field].delete(0, tk.END)
+            clear_devices_list_ui()
+            for widget in rules_inner.winfo_children():
+                widget.destroy()
+
+            messagebox.showinfo("Success", f"Bed {bed} deleted.")
+    else:
+        messagebox.showerror("Error", "Bed not found!")
+
+# Create new bed popup
+def open_new_bed_window():
+    new_window = tk.Toplevel(root)
+    new_window.title("Add New Bed")
+    new_window.geometry("500x420")
+    tk.Label(new_window, text="Create New Bed", font=("Arial", 14, "bold")).pack(pady=8)
+
+    id_row = tk.Frame(new_window)
+    id_row.pack(pady=4, anchor="w")
+    tk.Label(id_row, text="New Bed ID:", width=16, anchor="w").pack(side="left")
+    new_bed_var = tk.StringVar()
+    new_bed_entry = tk.Entry(id_row, textvariable=new_bed_var, width=20)
+    new_bed_entry.pack(side="left")
+
+    new_entries = {}
+    for field in fields:
+        r = tk.Frame(new_window)
+        r.pack(pady=4, anchor="w")
+        tk.Label(r, text=field + ":", width=16, anchor="w").pack(side="left")
+        ent = tk.Entry(r, width=50)
+        ent.pack(side="left")
+        new_entries[field] = ent
+
+    def save_new_bed():
+        new_bed = new_bed_var.get().strip()
+        if not new_bed:
+            messagebox.showerror("Error", "Bed ID cannot be empty.")
+            return
+        if new_bed in df['Bed ID'].astype(str).values:
+            messagebox.showerror("Error", "Bed ID already exists.")
+            return
+        new_row = {'Bed ID': new_bed}
+        for field in fields:
+            new_row[field] = new_entries[field].get()
+        df.loc[len(df)] = new_row
+        bed_dropdown['values'] = df['Bed ID'].astype(str).tolist()
+        save_data(df)
+        messagebox.showinfo("Success", f"New bed {new_bed} added!")
+        new_window.destroy()
+
+    tk.Button(new_window, text="Save New Bed", command=save_new_bed).pack(pady=12)
+
+# === Overview with clickable cards ===
+def open_overview():
+    overview = tk.Toplevel(root)
+    overview.title("Beds Overview by Ward")
+    overview.geometry("1180x720")
+
+    container = tk.Frame(overview)
+    container.pack(fill="both", expand=True)
+
+    canvas = tk.Canvas(container)
+    v_scroll = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
+    scroll_frame = tk.Frame(canvas)
+    scroll_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
+    canvas.configure(yscrollcommand=v_scroll.set)
+    canvas.pack(side="left", fill="both", expand=True)
+    v_scroll.pack(side="right", fill="y")
+
+    selected_card = {'widget': None}
+
+    def on_card_click(bed_id, card_widget):
+        bed_var.set(str(bed_id))
+        load_bed_details()
+        if selected_card['widget']:
+            selected_card['widget'].configure(bg="#F8F9FA")
+        card_widget.configure(bg="#E2F0D9")
+        selected_card['widget'] = card_widget
+
+    work_df = df.copy()
+    work_df['Ward'] = work_df['Ward'].fillna('Unknown ward')
+
+    for ward, group in work_df.groupby('Ward'):
+        tk.Label(scroll_frame, text=f"Ward: {ward}", font=("Arial", 16, "bold"), pady=10).pack(anchor="w")
+        ward_frame = tk.Frame(scroll_frame)
+        ward_frame.pack(fill="x", pady=5)
+
+        col_count = 3
+        row_idx = 0
+        col_idx = 0
+
+        for _, row in group.iterrows():
+            bed_id_str = str(row.get('Bed ID', ''))
+            card = tk.Frame(ward_frame, relief="solid", borderwidth=1, padx=10, pady=10, bg="#F8F9FA", cursor="hand2")
+            tk.Label(card, text=f"Bed ID: {bed_id_str}", font=("Arial", 12, "bold"), bg="#F8F9FA").pack(anchor="w")
+            tk.Label(card, text=f"Ward: {row.get('Ward', '')}", bg="#F8F9FA").pack(anchor="w")
+            tk.Label(card, text=f"Admission reason: {row.get('Admission reason', '')}", wraplength=300, bg="#F8F9FA").pack(anchor="w")
+            tk.Label(card, text=f"Active conditions: {row.get('Active conditions', '')}", wraplength=300, bg="#F8F9FA").pack(anchor="w")
+            tk.Label(card, text=f"Comorbidities: {row.get('Comorbidities', '')}", wraplength=300, bg="#F8F9FA").pack(anchor="w")
+            tk.Label(card, text=f"Predicted risks: {row.get('Predicted risks', '')}", wraplength=300, bg="#F8F9FA").pack(anchor="w")
+
+            card.bind("<Button-1>", lambda e, bid=bed_id_str, w=card: on_card_click(bid, w))
+            for child in card.winfo_children():
+                child.bind("<Button-1>", lambda e, bid=bed_id_str, w=card: on_card_click(bid, w))
+
+            card.grid(row=row_idx, column=col_idx, padx=10, pady=10, sticky="n")
+            col_idx += 1
+            if col_idx >= col_count:
+                col_idx = 0
+                row_idx += 1
+
+# === SEARCH AMONG RULES
 def apply_search():
     keyword = search_var.get().strip().lower()
     bed_id = bed_var.get()
@@ -234,6 +336,112 @@ def clear_search():
     bed_id = bed_var.get()
     if bed_id and bed_id in df['Bed ID'].astype(str).values:
         show_processing_rules(bed_id, filter_keyword=None)
+
+# === MAIN UI ===
+root = tk.Tk()
+
+# Top header frame
+header_frame = tk.Frame(root)
+header_frame.pack(fill="x", pady=8)
+
+# Title on the left
+tk.Label(header_frame, text="Bed Profile Manager", font=("Arial", 18, "bold")).grid(row=0, column=0, sticky="w", padx=10)
+
+# Buttons on the right
+btn_frame = tk.Frame(header_frame)
+btn_frame.grid(row=0, column=1, sticky="e", padx=10)
+
+tk.Button(btn_frame, text="Save Changes", command=save_changes, width=16).grid(row=0, column=0, padx=6)
+tk.Button(btn_frame, text="Delete Bed", command=delete_bed, width=16).grid(row=0, column=2, padx=6)
+tk.Button(btn_frame, text="Create New Bed", command=open_new_bed_window, width=16).grid(row=0, column=1, padx=6)
+tk.Button(btn_frame, text="Overview of All Beds", command=open_overview, width=20).grid(row=0, column=3, padx=6)
+
+
+# Main form container using grid for a 2-column layout
+form_frame = tk.Frame(root)
+form_frame.pack(padx=12, pady=8, fill="both", expand=True)
+form_frame.grid_columnconfigure(0, weight=1)
+form_frame.grid_columnconfigure(1, weight=1)
+
+entries = {}
+fields = ['Ward', 'Admission reason', 'Active conditions', 'Comorbidities', 'Predicted risks']
+
+# Row 1: Ward (left) and Bed ID dropdown (right)
+ward_frame = tk.Frame(form_frame)
+ward_frame.grid(row=0, column=0, sticky="nsew", padx=8, pady=6)
+tk.Label(ward_frame, text="Ward:", width=18, anchor="w").grid(row=0, column=0, sticky="w")
+entries['Ward'] = tk.Entry(ward_frame, width=40)
+entries['Ward'].grid(row=0, column=1, sticky="ew", padx=6)
+ward_frame.grid_columnconfigure(1, weight=1)
+
+bed_frame = tk.Frame(form_frame)
+bed_frame.grid(row=0, column=1, sticky="nsew", padx=8, pady=6)
+tk.Label(bed_frame, text="Bed number (ID):", anchor="w").grid(row=0, column=0, sticky="w", padx=(0, 6))
+bed_var = tk.StringVar()
+bed_dropdown = ttk.Combobox(bed_frame, textvariable=bed_var, values=df['Bed ID'].astype(str).tolist(), width=20)
+bed_dropdown.grid(row=0, column=1, sticky="ew")
+bed_frame.grid_columnconfigure(1, weight=1)
+
+# Row 2: Admission reason (left) and grouped fields (right)
+
+"""
+reason_frame = tk.Frame(form_frame)
+reason_frame.grid(row=1, column=0, sticky="nsew", padx=8, pady=6)
+tk.Label(reason_frame, text="Admission reason:", width=18, anchor="w").grid(row=0, column=0, sticky="w")
+entries['Admission reason'] = tk.Entry(reason_frame, width=60)
+entries['Admission reason'].grid(row=0, column=1, sticky="ew", padx=6)
+reason_frame.grid_columnconfigure(1, weight=1)
+
+group_frame = tk.LabelFrame(form_frame, text="Clinical summary", padx=8, pady=8)
+group_frame.grid(row=1, column=1, sticky="nsew", padx=8, pady=6)
+group_frame.grid_columnconfigure(1, weight=1)
+
+for i, field in enumerate(['Active conditions', 'Comorbidities', 'Predicted risks']):
+    tk.Label(group_frame, text=field + ":", width=18, anchor="w").grid(row=i, column=0, sticky="w", pady=(6 if i>0 else 0,0))
+    entries[field] = tk.Entry(group_frame, width=60)
+    entries[field].grid(row=i, column=1, sticky="ew", padx=6, pady=(6 if i>0 else 0,0))
+
+"""
+
+
+# Combined Clinical summary frame with two columns
+combined_frame = tk.LabelFrame(form_frame, text="Clinical summary", padx=8, pady=8)
+combined_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=8, pady=6)
+combined_frame.grid_columnconfigure(0, weight=1)
+combined_frame.grid_columnconfigure(1, weight=1)
+
+# Left column: Admission reason
+tk.Label(combined_frame, text="Admission reason:", width=18, anchor="w").grid(row=0, column=0, sticky="w")
+entries['Admission reason'] = tk.Entry(combined_frame, width=40)
+entries['Admission reason'].grid(row=0, column=0, sticky="ew", padx=(140, 6))
+
+# Right column: Active conditions, Comorbidities, Predicted risks
+for i, field in enumerate(['Active conditions', 'Comorbidities', 'Predicted risks']):
+    tk.Label(combined_frame, text=field + ":", width=18, anchor="w").grid(row=i, column=1, sticky="w", pady=(6 if i > 0 else 0, 0))
+    entries[field] = tk.Entry(combined_frame, width=60)
+    entries[field].grid(row=i, column=1, sticky="ew", padx=6, pady=(6 if i > 0 else 0, 0))
+
+
+# Row 3: Connected devices manager spanning both columns
+devices_section = tk.LabelFrame(form_frame, text="Connected medical devices", padx=8, pady=8)
+devices_section.grid(row=2, column=0, columnspan=2, sticky="nsew", padx=8, pady=10)
+devices_row = tk.Frame(devices_section)
+devices_row.grid(row=0, column=0, sticky="nsew")
+
+# Inside devices_row (Row 3)
+tk.Label(devices_row, text="Connected devices:", width=18, anchor="w").grid(row=0, column=0, sticky="nw")
+devices_listbox = tk.Listbox(devices_row, selectmode=tk.EXTENDED, width=50, height=3)
+devices_listbox.grid(row=0, column=1, sticky="w")
+current_devices_var = tk.StringVar(value="")
+
+
+# === SEARCH BAR ===
+search_frame = tk.Frame(root)
+search_frame.pack(pady=6, fill="x")
+tk.Label(search_frame, text="Search by threshold parameter:", font=("Arial", 12)).pack(side="left", padx=6)
+search_var = tk.StringVar()
+search_entry = tk.Entry(search_frame, textvariable=search_var, width=30)
+search_entry.pack(side="left", padx=6)
 
 tk.Button(search_frame, text="Search", command=apply_search).pack(side="left", padx=6)
 tk.Button(search_frame, text="Clear", command=clear_search).pack(side="left", padx=6)
@@ -554,174 +762,5 @@ def load_bed_details(event=None):
             widget.destroy()
 bed_dropdown.bind("<<ComboboxSelected>>", load_bed_details)
 
-# Save changes
-def save_changes():
-    bed = bed_var.get()
-    if bed in df['Bed ID'].astype(str).values:
-        # 1) Save bed details to Patients.xlsx
-        for field in fields:
-            df.loc[df['Bed ID'].astype(str) == bed, field] = entries[field].get()
-        save_data(df)
-
-        # 2) Save connected devices to Medical Devices.xlsx (Link of "Devices" to beds)
-        current_devices = listbox_items()
-        # Order-preserving de-duplication (case-insensitive)
-        seen = set()
-        ordered_unique = []
-        for d in current_devices:
-            key = d.lower().strip()
-            if key and key not in seen:
-                seen.add(key)
-                ordered_unique.append(d.strip())
-
-        # Remove all old links for this bed
-        df_devices_link.drop(df_devices_link[df_devices_link['Bed ID'].astype(str) == bed].index, inplace=True)
-        # Add new links (one row per device)
-        for device in ordered_unique:
-            df_devices_link.loc[len(df_devices_link)] = {'Bed ID': bed, 'Device': device}
-        save_devices_data()
-
-        # 3) Refresh UI (device list + rules + alarms) and show success
-        refresh_devices_list_ui(bed)
-        kw = search_var.get().strip().lower()
-        show_processing_rules(bed, filter_keyword=(kw if kw else None))
-        messagebox.showinfo("Success", "Changes saved successfully!")
-    else:
-        messagebox.showerror("Error", "Bed not found!")
-
-# Delete bed
-def delete_bed():
-    bed = bed_var.get()
-    if bed in df['Bed ID'].astype(str).values:
-        confirm = messagebox.askyesno("Confirm Delete", f"Delete bed {bed}?")
-        if confirm:
-            df.drop(df[df['Bed ID'].astype(str) == bed].index, inplace=True)
-            bed_dropdown['values'] = df['Bed ID'].astype(str).tolist()
-            bed_var.set('')
-
-            # Also remove device links for this bed
-            df_devices_link.drop(df_devices_link[df_devices_link['Bed ID'].astype(str) == bed].index, inplace=True)
-            save_data(df)
-            save_devices_data()
-
-            for field in fields:
-                entries[field].delete(0, tk.END)
-            clear_devices_list_ui()
-            for widget in rules_inner.winfo_children():
-                widget.destroy()
-
-            messagebox.showinfo("Success", f"Bed {bed} deleted.")
-    else:
-        messagebox.showerror("Error", "Bed not found!")
-
-# Create new bed popup
-def open_new_bed_window():
-    new_window = tk.Toplevel(root)
-    new_window.title("Add New Bed")
-    new_window.geometry("500x420")
-    tk.Label(new_window, text="Create New Bed", font=("Arial", 14, "bold")).pack(pady=8)
-
-    id_row = tk.Frame(new_window)
-    id_row.pack(pady=4, anchor="w")
-    tk.Label(id_row, text="New Bed ID:", width=16, anchor="w").pack(side="left")
-    new_bed_var = tk.StringVar()
-    new_bed_entry = tk.Entry(id_row, textvariable=new_bed_var, width=20)
-    new_bed_entry.pack(side="left")
-
-    new_entries = {}
-    for field in fields:
-        r = tk.Frame(new_window)
-        r.pack(pady=4, anchor="w")
-        tk.Label(r, text=field + ":", width=16, anchor="w").pack(side="left")
-        ent = tk.Entry(r, width=50)
-        ent.pack(side="left")
-        new_entries[field] = ent
-
-    def save_new_bed():
-        new_bed = new_bed_var.get().strip()
-        if not new_bed:
-            messagebox.showerror("Error", "Bed ID cannot be empty.")
-            return
-        if new_bed in df['Bed ID'].astype(str).values:
-            messagebox.showerror("Error", "Bed ID already exists.")
-            return
-        new_row = {'Bed ID': new_bed}
-        for field in fields:
-            new_row[field] = new_entries[field].get()
-        df.loc[len(df)] = new_row
-        bed_dropdown['values'] = df['Bed ID'].astype(str).tolist()
-        save_data(df)
-        messagebox.showinfo("Success", f"New bed {new_bed} added!")
-        new_window.destroy()
-
-    tk.Button(new_window, text="Save New Bed", command=save_new_bed).pack(pady=12)
-
-# === Overview with clickable cards ===
-def open_overview():
-    overview = tk.Toplevel(root)
-    overview.title("Beds Overview by Ward")
-    overview.geometry("1180x720")
-
-    container = tk.Frame(overview)
-    container.pack(fill="both", expand=True)
-
-    canvas = tk.Canvas(container)
-    v_scroll = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
-    scroll_frame = tk.Frame(canvas)
-    scroll_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-    canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
-    canvas.configure(yscrollcommand=v_scroll.set)
-    canvas.pack(side="left", fill="both", expand=True)
-    v_scroll.pack(side="right", fill="y")
-
-    selected_card = {'widget': None}
-
-    def on_card_click(bed_id, card_widget):
-        bed_var.set(str(bed_id))
-        load_bed_details()
-        if selected_card['widget']:
-            selected_card['widget'].configure(bg="#F8F9FA")
-        card_widget.configure(bg="#E2F0D9")
-        selected_card['widget'] = card_widget
-
-    work_df = df.copy()
-    work_df['Ward'] = work_df['Ward'].fillna('Unknown ward')
-
-    for ward, group in work_df.groupby('Ward'):
-        tk.Label(scroll_frame, text=f"Ward: {ward}", font=("Arial", 16, "bold"), pady=10).pack(anchor="w")
-        ward_frame = tk.Frame(scroll_frame)
-        ward_frame.pack(fill="x", pady=5)
-
-        col_count = 3
-        row_idx = 0
-        col_idx = 0
-
-        for _, row in group.iterrows():
-            bed_id_str = str(row.get('Bed ID', ''))
-            card = tk.Frame(ward_frame, relief="solid", borderwidth=1, padx=10, pady=10, bg="#F8F9FA", cursor="hand2")
-            tk.Label(card, text=f"Bed ID: {bed_id_str}", font=("Arial", 12, "bold"), bg="#F8F9FA").pack(anchor="w")
-            tk.Label(card, text=f"Ward: {row.get('Ward', '')}", bg="#F8F9FA").pack(anchor="w")
-            tk.Label(card, text=f"Admission reason: {row.get('Admission reason', '')}", wraplength=300, bg="#F8F9FA").pack(anchor="w")
-            tk.Label(card, text=f"Active conditions: {row.get('Active conditions', '')}", wraplength=300, bg="#F8F9FA").pack(anchor="w")
-            tk.Label(card, text=f"Comorbidities: {row.get('Comorbidities', '')}", wraplength=300, bg="#F8F9FA").pack(anchor="w")
-            tk.Label(card, text=f"Predicted risks: {row.get('Predicted risks', '')}", wraplength=300, bg="#F8F9FA").pack(anchor="w")
-
-            card.bind("<Button-1>", lambda e, bid=bed_id_str, w=card: on_card_click(bid, w))
-            for child in card.winfo_children():
-                child.bind("<Button-1>", lambda e, bid=bed_id_str, w=card: on_card_click(bid, w))
-
-            card.grid(row=row_idx, column=col_idx, padx=10, pady=10, sticky="n")
-            col_idx += 1
-            if col_idx >= col_count:
-                col_idx = 0
-                row_idx += 1
-
-# Buttons
-btn_frame = tk.Frame(root)
-btn_frame.pack(pady=12)
-tk.Button(btn_frame, text="Save Changes", command=save_changes, width=16).grid(row=0, column=0, padx=6)
-tk.Button(btn_frame, text="Create New Bed", command=open_new_bed_window, width=16).grid(row=0, column=1, padx=6)
-tk.Button(btn_frame, text="Delete Bed", command=delete_bed, width=16).grid(row=0, column=2, padx=6)
-tk.Button(btn_frame, text="Overview of All Beds", command=open_overview, width=20).grid(row=0, column=3, padx=6)
 
 root.mainloop()
